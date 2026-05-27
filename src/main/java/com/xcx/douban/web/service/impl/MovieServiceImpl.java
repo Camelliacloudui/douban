@@ -3,27 +3,36 @@ package com.xcx.douban.web.service.impl;
 import com.xcx.douban.commen.Movie;
 import com.xcx.douban.crawler.Content;
 import com.xcx.douban.crawler.DoubanCrawler;
+import com.xcx.douban.kafka.KafkaProducer;
 import com.xcx.douban.web.mapper.MovieMapper;
 import com.xcx.douban.web.service.MovieService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class MovieServiceImpl implements MovieService {
-    @Autowired
-    private MovieMapper movieMapper;
+    private final MovieMapper movieMapper;
+    private final KafkaProducer kafkaProducer;
+    public MovieServiceImpl(MovieMapper movieMapper,KafkaProducer kafkaProducer) {
+        this.movieMapper = movieMapper;
+        this.kafkaProducer = kafkaProducer;
+    }
+
+    private List<Movie> cachedMovies = new ArrayList<>();
 
     @Override
-    public void saveMoviesFromCrawler() {
+    public List<Movie> saveMoviesFromCrawler() {
         DoubanCrawler doubanCrawler = new DoubanCrawler();
+        List<Movie> result = new ArrayList<>();
 
         try {
             List<Content> list = doubanCrawler.getData();
 
-            for(Content c:list){
+            list.forEach(c ->{
                 Movie movie = new Movie();
 
                 //判空处理
@@ -52,10 +61,35 @@ public class MovieServiceImpl implements MovieService {
                 } else {
                     movie.setPeople(0);
                 }
-                movieMapper.insert(movie);
-            }
+
+                result.add(movie);
+            });
+            this.cachedMovies = result;
+            return result;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<Movie> getMoviesFromCrawler(){
+        return this.cachedMovies;
+    }
+
+    @Override
+    public void saveMoviesToDB(List<Movie> movies){
+        movies.forEach (movie -> {
+            movieMapper.insert(movie);
+            //后续为了应对高并发会使用批量发送接口
+            kafkaProducer.send(movie);
+        });
+    }
+
+    //确保存储成功，避免重复或半成功
+    @Override
+    @Transactional
+    public void crawlAndSaveToDB(){
+        List<Movie> movies = saveMoviesFromCrawler();
+        saveMoviesToDB(movies);
     }
 }

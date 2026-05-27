@@ -3,8 +3,14 @@ package com.xcx.douban.web.service;
 
 import com.xcx.douban.commen.Movie;
 
-public interface MovieService {
-    void saveMoviesFromCrawler();
+import java.util.List;
 
-    Movie getMoviesFromCrawler();
+public interface MovieService {
+    List<Movie> saveMoviesFromCrawler();
+
+    List<Movie> getMoviesFromCrawler();
+
+    void saveMoviesToDB(List<Movie> movies);
+
+    void crawlAndSaveToDB();
 }

@@ -17,4 +17,6 @@ public class MovieController {
         movieService.saveMoviesFromCrawler();
         return "数据保存成功！";
     }
+
+
 }

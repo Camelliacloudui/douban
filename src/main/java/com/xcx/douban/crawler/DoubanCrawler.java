@@ -39,7 +39,7 @@ public class DoubanCrawler {
                 String score = elscores.first() != null ? elscores.first().text() : "";
 
                 // 评分人数是父 div 里的最后一个 span
-                Element peopleEl = el.selectFirst("div.star span:last-child");
+                Element peopleEl = el.selectFirst("span:contains(人评价)");
                 String peopleText = peopleEl != null ? peopleEl.text() : "";
 
                 Content content = new Content();

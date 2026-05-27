@@ -1,13 +1,16 @@
 package com.xcx.douban.kafka;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.xcx.douban.commen.Movie;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.stereotype.Service;
+import com.xcx.douban.utils.JsonUtils;
 
-@Controller
-@RequestMapping("kafka")
+import java.util.List;
+/**
+ * Kafka 消息生产者
+ * 未来可扩展：批量发送、异步回调、发送失败重试
+ */
+@Service
 public class KafkaProducer {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
@@ -15,13 +18,16 @@ public class KafkaProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    private static final String MOVIE = "douban-movie-topic";
+    private static final String TOPIC = "douban-movie-topic";
 
-    @RequestMapping("/send")
-    @ResponseBody
-    public String send(String movieJSON) {
-        // #2. 发送Kafka消息
-        kafkaTemplate.send(MOVIE, movieJSON);
-        return "success";
+    public void send(Movie movie) {
+        kafkaTemplate.send(TOPIC, JsonUtils.toJson(movie));
+    }
+
+    //批量发送接口
+    public void sendMovies(List<Movie> movies) {
+        movies.forEach(movie ->
+                kafkaTemplate.send(TOPIC, JsonUtils.toJson(movie))
+        );
     }
 }
