@@ -14,14 +14,6 @@ public class Content {
         this.title = title;
     }
 
-    public String getScore() {
-        return score;
-    }
-
-    public void setScore(String score) {
-        this.score = score;
-    }
-
 
     public String getPeopleText() {
         return peopleText;
@@ -29,5 +21,14 @@ public class Content {
 
     public void setPeopleText(String peopleText) {
         this.peopleText = peopleText;
+    }
+
+
+    public String getScore() {
+        return score;
+    }
+
+    public void setScore(String score) {
+        this.score = score;
     }
 }
