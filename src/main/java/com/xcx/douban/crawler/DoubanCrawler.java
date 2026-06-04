@@ -6,11 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import javax.swing.text.AbstractDocument;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +43,7 @@ public class DoubanCrawler {
                 content.setTitle(title);
                 content.setScore(score);
                 content.setPeopleText(peopleText);
+                content.setTimestamp(System.currentTimeMillis());
                 list.add(content);
             }
 

@@ -1,6 +1,6 @@
 package com.xcx.douban.flink.sink;
 
-import com.xcx.douban.flink.Movie;
+import com.xcx.douban.flink.HotMovie;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.sink.RichSinkFunction;
 
@@ -8,7 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 
-public class MySQLSink extends RichSinkFunction<Movie> {
+public class MySQLSink extends RichSinkFunction<HotMovie> {
     private Connection connection;
     private PreparedStatement preparedStatement;
 
@@ -29,10 +29,14 @@ public class MySQLSink extends RichSinkFunction<Movie> {
     }
 
     @Override
-    public void invoke(Movie movie, Context context) throws Exception {
-        // 4. 计算热度分
-        double hotScore = movie.getScoreNumber() * 1000 + movie.getPeopleNumber() / 100.0;
-        preparedStatement.setString(1, movie.getTitle());
+    public void invoke(HotMovie hotMovie, Context context) throws Exception {
+        System.out.println("MySQLSink 被调用，电影: " + hotMovie.getTitle());
+
+        // 这里的hotMovie是聚合后的全新的变量
+        double hotScore = hotMovie.getScoreNumber() * 1000 + hotMovie.getPeopleNumber() / 100.0;
+        System.out.println("热度分为" + hotScore);
+
+        preparedStatement.setString(1, hotMovie.getTitle());
         preparedStatement.setDouble(2, hotScore);
         preparedStatement.executeUpdate();
     }
